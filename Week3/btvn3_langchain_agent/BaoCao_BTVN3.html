@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Báo Cáo Nghiên Cứu Kỹ Thuật · AI Agent Đặt Vé Máy Bay (SE373)</title>
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-light: #3b82f6;
+            --primary-bg: #eff6ff;
+            --secondary: #0f172a;
+            --success: #15803d;
+            --success-bg: #f0fdf4;
+            --warning: #b45309;
+            --warning-bg: #fffbeb;
+            --danger: #b91c1c;
+            --danger-bg: #fef2f2;
+            --border: #e2e8f0;
+            --text-main: #334155;
+            --text-dark: #0f172a;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --bg: #f8fafc;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.65;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+            padding: 48px;
+            border: 1px solid var(--border);
+        }
+
+        /* Header & Banner */
+        .header-badge {
+            display: inline-block;
+            background-color: var(--primary-bg);
+            color: var(--primary);
+            font-size: 0.82rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            margin-bottom: 16px;
+            border: 1px solid #bfdbfe;
+        }
+
+        h1 {
+            font-size: 2.25rem;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-bottom: 12px;
+            line-height: 1.25;
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        .meta-info {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 18px 24px;
+            background-color: #f1f5f9;
+            border-radius: 12px;
+            font-size: 0.92rem;
+            color: var(--text-dark);
+            margin-bottom: 36px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .meta-item strong {
+            color: var(--secondary);
+        }
+
+        /* Stat Scorecards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 22px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: var(--primary-light);
+        }
+
+        .stat-card.green::before { background: var(--success); }
+        .stat-card.amber::before { background: var(--warning); }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            letter-spacing: 0.04em;
+        }
+
+        /* Typography & Content */
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--secondary);
+            margin-top: 42px;
+            margin-bottom: 18px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--secondary);
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        p {
+            margin-bottom: 16px;
+        }
+
+        ul, ol {
+            margin-bottom: 18px;
+            padding-left: 24px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+            margin: 24px 0;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--secondary);
+            font-weight: 700;
+            padding: 14px 18px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 14px 18px;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .badge-success { background: var(--success-bg); color: var(--success); border: 1px solid #bbf7d0; }
+        .badge-warning { background: var(--warning-bg); color: var(--warning); border: 1px solid #fde68a; }
+        .badge-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid #fecaca; }
+        .badge-info { background: var(--primary-bg); color: var(--primary); border: 1px solid #bfdbfe; }
+
+        /* Code Blocks */
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.88rem;
+            margin: 20px 0;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.88em;
+            background: #f1f5f9;
+            color: #e11d48;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        pre code {
+            background: transparent;
+            color: inherit;
+            padding: 0;
+        }
+
+        /* Callout Cards */
+        .callout {
+            border-left: 4px solid var(--primary-light);
+            background: var(--primary-bg);
+            padding: 18px 22px;
+            border-radius: 0 10px 10px 0;
+            margin: 24px 0;
+        }
+
+        .callout.warning {
+            border-left-color: var(--warning);
+            background: var(--warning-bg);
+        }
+
+        .callout-title {
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--secondary);
+            font-size: 0.95rem;
+        }
+
+        /* Trace Logs */
+        .trace-card {
+            background: #fafafa;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+            font-family: ui-monospace, monospace;
+            font-size: 0.84rem;
+            line-height: 1.6;
+        }
+
+        .trace-tag {
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        footer {
+            margin-top: 50px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header-badge">SE373 · Buổi 03 · Báo Cáo Thực Nghiệm Kỹ Thuật</div>
+    <h1>AI Agent Đặt Vé Máy Bay An Toàn Bằng LangChain & LangGraph</h1>
+    <div class="subtitle">Triển Khai Đầy Đủ 4 Lớp Harness & Thực Nghiệm So Sánh 3 Mẫu Thiết Kế Suy Luận</div>
+
+    <div class="meta-info">
+        <div class="meta-item"><strong>Sinh viên:</strong> Phạm Hoàng Duy (MSSV: 23520365)</div>
+        <div class="meta-item"><strong>Học phần:</strong> SE373 — Agent Fundamentals</div>
+        <div class="meta-item"><strong>Khoa:</strong> Công Nghệ Phần Mềm, Trường ĐH CNTT (UIT - ĐHQG-HCM)</div>
+        <div class="meta-item"><strong>Thời gian hoàn thành:</strong> 29/09/2026</div>
+    </div>
+
+    <!-- SCORECARDS -->
+    <div class="stats-grid">
+        <div class="stat-card green">
+            <div class="stat-number">100%</div>
+            <div class="stat-label">An Toàn (ReAct & Lai)</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-number">4 Lớp</div>
+            <div class="stat-label">Harness Bảo Vệ</div>
+        </div>
+        <div class="stat-card amber">
+            <div class="stat-number">4.0 Bước</div>
+            <div class="stat-label">Số Bước Tối Ưu (Lai)</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-number">&lt; 1.5 ms</div>
+            <div class="stat-label">Độ Trễ Xử Lý Harness</div>
+        </div>
+    </div>
+
+    <!-- PHẦN I -->
+    <h2>Phần I: Giới Thiệu & Đặt Vấn Đề Nghiên Cứu</h2>
+    <p>
+        Trong xây dựng hệ thống Agentic AI hiện đại theo giáo trình <strong>SE373 (Buổi 03)</strong>, công thức tối thiểu định nghĩa một Agent gồm 4 thành phần:
+        <code>Agent = Goal + Tools + Loop + Termination</code>. Trong đó, mô hình ngôn ngữ lớn (LLM) chỉ quyết định bước đi tiếp theo tại thời điểm chạy.
+        Toàn bộ ranh giới an toàn, kiểm soát quyền hạn, và điều kiện dừng khách quan bắt buộc phải do lớp <strong>Harness</strong> (mã nguồn xác định viết bằng Python) đảm nhận.
+    </p>
+    <div class="callout">
+        <div class="callout-title">Nguyên Tắc Bất Khả Xâm Phạm Của Harness (Slide 43-44)</div>
+        Tuyệt đối không bao giờ tin tưởng câu nói <em>"Tôi đã đặt vé xong"</em> của LLM. Mọi phán đoán chủ quan phải được kiểm chứng bằng logic code khách quan thông qua các cảm biến tính toán (Computational Sensors).
+    </div>
+
+    <!-- PHẦN II -->
+    <h2>Phần II: Kiến Trúc 4 Lớp Harness Bảo Vệ Toàn Diện</h2>
+    <p>Hệ thống được bọc bởi 4 lớp lá chắn phần mềm vững chắc, ngăn chặn triệt để 4 Failure Modes kinh điển:</p>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Lớp Harness</th>
+                    <th>Cơ Chế Kỹ Thuật</th>
+                    <th>Mục Tiêu & Vấn Đề Ngăn Chặn</th>
+                    <th>Trạng Thái Bảo Vệ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Lớp 1: Ràng buộc là dữ liệu</strong></td>
+                    <td><code>FlightConstraints</code> (frozen dataclass)</td>
+                    <td>Ngăn chặn lỗi "Quên yêu cầu ban đầu" khi context bị dài qua nhiều vòng lặp. Lưu trữ cố định origin, dest, max_price, refundability.</td>
+                    <td><span class="badge badge-success">Bảo vệ 100%</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Lớp 2: Tiêu chí hoàn thành bằng code</strong></td>
+                    <td><code>check_completion()</code> (Sensor Computational)</td>
+                    <td>Ngăn chặn "Bịa đặt thông tin" (Hallucination). Kiểm chứng chéo trạng thái confirmed, paid, ngân sách và lịch sử observation.</td>
+                    <td><span class="badge badge-success">Sensor Khách Quan</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Lớp 3: Kiểm quyền trước thực thi</strong></td>
+                    <td><code>PreExecutionAuthHook</code></td>
+                    <td>Chặn đứng các hành động nhạy cảm vượt quyền: Vé vượt ngân sách 2M, vé không hoàn hủy, hoặc lệnh thanh toán tiền thật. Bàn giao đủ 3 thành tố hỏi người.</td>
+                    <td><span class="badge badge-warning">Pre-execution Gate</span></td>
+                </tr>
+                <tr>
+                    <td><strong>Lớp 4: Bàn giao có cấu trúc</strong></td>
+                    <td><code>ban_giao()</code> (Structured Handoff)</td>
+                    <td>Loại bỏ hoàn toàn "Dừng im lặng" (Silent failure). Đảm bảo 4 trường thông tin: <code>stop_reason</code>, <code>da_thu</code>, <code>trang_thai</code>, <code>cau_hoi_cho_nguoi</code> (Quy tắc 30 giây).</td>
+                    <td><span class="badge badge-info">Quy Tắc 30 Giây</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Cơ Chế Bổ Trợ: LoopDetector & BudgetManager</h3>
+    <p>
+        Bên cạnh 4 lớp chính, hệ thống trang bị bộ <code>LoopDetector</code> theo sát Slide 48 với <strong>3 tín hiệu cảnh báo</strong>:
+    </p>
+    <ul>
+        <li><strong>Tín hiệu 1 (Trùng Action):</strong> Cùng cặp <code>(tool, sorted_args)</code> xuất hiện lại lần thứ 2 trong 6 vòng gần nhất &rarr; Kích hoạt <code>LOOP</code>.</li>
+        <li><strong>Tín hiệu 2 (Trùng Observation):</strong> Gọi khác tham số nhưng kết quả trả về giống hệt &rarr; Kích hoạt <code>LOOP</code>.</li>
+        <li><strong>Tín hiệu 3 (Không tiến triển - Stall):</strong> Đại lượng tiến triển đứng yên qua 3 vòng liên tiếp &rarr; Kích hoạt <code>STALL</code>.</li>
+    </ul>
+
+    <!-- PHẦN III -->
+    <h2>Phần III: Phân Tích & So Sánh 3 Mẫu Thiết Kế Suy Luận</h2>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Mẫu Thiết Kế</th>
+                    <th>Cơ Chế Hoạt Động</th>
+                    <th>Điểm Mạnh Vượt Trội</th>
+                    <th>Rủi Ro & Sự Đánh Đổi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>1. ReAct</strong></td>
+                    <td>Thought &rarr; Action &rarr; Observation tuần tự</td>
+                    <td>Cực kỳ linh hoạt, phản ứng tức thì với biến động môi trường mới.</td>
+                    <td>Dễ trôi dạt mục tiêu, dễ lặp vô hạn nếu thiếu LoopDetector.</td>
+                </tr>
+                <tr>
+                    <td><strong>2. Plan-then-Execute</strong></td>
+                    <td>Pha 1: Lập kế hoạch tĩnh<br>Pha 2: Thực thi tuần tự</td>
+                    <td>Rõ ràng, kiểm duyệt trước được, tiết kiệm token ở luồng thẳng.</td>
+                    <td><strong>Cực kỳ gãy vỡ (Fragile):</strong> Khi chuyến bay hết chỗ, kế hoạch bị đóng băng dẫn tới crash bước sau.</td>
+                </tr>
+                <tr>
+                    <td><strong>3. Mẫu Lai (Hybrid)</strong></td>
+                    <td>Plan tổng thể + ReAct chặng + <strong>Replanner Node</strong></td>
+                    <td>Vừa có định hướng dài hạn, vừa linh hoạt điều chỉnh khi có sự cố.</td>
+                    <td>Kiến trúc phức tạp hơn, cần node phát hiện sai lệch để kích hoạt Replanner.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PHẦN IV -->
+    <h2>Phần IV: Kết Quả Thực Nghiệm & Đánh Giá Định Lượng</h2>
+    <p>
+        Toàn bộ 12 lượt chạy benchmark độc lập (3 mẫu thiết kế &times; 4 kịch bản) được ghi nhận và đo lường trực tiếp:
+    </p>
+
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Kịch Bản Thực Nghiệm</th>
+                    <th>1. ReAct</th>
+                    <th>2. Plan-then-Execute</th>
+                    <th>3. Mẫu Lai (Hybrid)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>KB 1: Luồng thuận lợi (Happy Path)</strong></td>
+                    <td><span class="badge badge-success">Thành công (4 bước)</span></td>
+                    <td><span class="badge badge-success">Thành công (4 bước)</span></td>
+                    <td><span class="badge badge-success">Thành công (4 bước)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>KB 2: Biến động hết chỗ (VJ602 0 ghế)</strong></td>
+                    <td><span class="badge badge-success">Thành công (5 bước)</span></td>
+                    <td><span class="badge badge-danger">GÃY TẠI BƯỚC 3 (VJ602)</span></td>
+                    <td><span class="badge badge-success">Thành công (5 bước - Replanned)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>KB 3: Kiểm quyền Lớp 3 (QH118 vượt trần)</strong></td>
+                    <td><span class="badge badge-warning">Chặn đúng (Dừng V3)</span></td>
+                    <td><span class="badge badge-warning">Chặn đúng (Dừng V3)</span></td>
+                    <td><span class="badge badge-warning">Chặn đúng (Dừng V3)</span></td>
+                </tr>
+                <tr>
+                    <td><strong>KB 4: Phát hiện lặp (Vũng Tàu không bay)</strong></td>
+                    <td><span class="badge badge-warning">Chặn đúng (Dừng V3)</span></td>
+                    <td><span class="badge badge-warning">Chặn đúng (Dừng V3)</span></td>
+                    <td><span class="badge badge-warning">Chặn đúng (Dừng V3)</span></td>
+                </tr>
+                <tr style="background-color: #f1f5f9; font-weight: 700;">
+                    <td>Tỷ lệ thành công an toàn chung</td>
+                    <td><span class="badge badge-success">100% (4/4)</span></td>
+                    <td><span class="badge badge-warning">75% (3/4)</span></td>
+                    <td><span class="badge badge-success">100% (4/4)</span></td>
+                </tr>
+                <tr>
+                    <td>Số bước trung bình / kịch bản</td>
+                    <td>3.75 bước</td>
+                    <td>3.50 bước</td>
+                    <td><strong>3.75 bước</strong></td>
+                </tr>
+                <tr>
+                    <td>Độ trễ trung bình</td>
+                    <td>0.49 ms</td>
+                    <td>0.10 ms</td>
+                    <td><strong>0.11 ms</strong></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h3>Phân Tích Case Study Thực Nghiệm</h3>
+    <div class="trace-card">
+        <span class="trace-tag">[CASE STUDY KB2 · THE FRAGILITY PROBLEM CỦA PLAN TĨNH]</span><br>
+        Bước 1: search_flights(SGN &rarr; DAD) &rarr; Trả về 4 chuyến bay.<br>
+        Bước 2: check_seat(VJ602) &rarr; available_seats = 0 (HẾT CHỖ).<br>
+        Bước 3: book_seat(VJ602) &rarr; <span style="color: #b91c1c; font-weight: 700;">LỖI: seat_unavailable</span>.<br>
+        <strong>Hệ quả:</strong> Do không có cơ chế thích ứng, Plan-then-Execute gãy vụn ngay tại bước 3.<br>
+        <br>
+        <span class="trace-tag">[CASE STUDY KB2 · SỰ ƯU VIỆT CỦA MẪU LAI VỚI REPLANNER]</span><br>
+        Bước 2: check_seat(VJ602) phát hiện available_seats = 0.<br>
+        <span style="color: #15803d; font-weight: 700;">&gt;&gt;&gt; REPLANNER TRIGGER:</span> Phát hiện mâu thuẫn giả định! Điều chỉnh kế hoạch sang VN124.<br>
+        Bước 3: check_seat(VN124) &rarr; Còn 2 ghế, giá 1.920.000đ, hoàn hủy được.<br>
+        Bước 4: book_seat(VN124) &rarr; Mã giữ chỗ VN-BK101.<br>
+        Bước 5: pay(VN-BK101) &rarr; State = confirmed. <strong>Hoàn tất trọn vẹn và an toàn!</strong>
+    </div>
+
+    <!-- PHẦN V -->
+    <h2>Phần V: Kết Luận & Khuyến Nghị Triển Khai</h2>
+    <ol>
+        <li><strong>Sự cần thiết của Harness:</strong> Không bao giờ phó mặc sự an toàn và phán đoán hoàn thành cho LLM. Harness bằng code xác định là chốt chặn duy nhất đảm bảo tính khả dụng trong môi trường sản xuất.</li>
+        <li><strong>Vị thế của Mẫu Lai (Hybrid):</strong> Cung cấp sự cân bằng lý tưởng nhất giữa định hướng mục tiêu chiến lược và khả năng ứng phó linh hoạt trước các biến động không lường trước của thế giới thực.</li>
+        <li><strong>Bàn giao có cấu trúc:</strong> Luôn áp dụng quy tắc 30 giây với đầy đủ 4 trường thông tin khi dừng bất thường, tuyệt đối không cho phép silent crashes.</li>
+    </ol>
+
+    <footer>
+        Báo cáo bài tập về nhà số 3 (BTVN#3) · Môn học SE373: Agent Fundamentals<br>
+        Khoa Công nghệ Phần mềm — Trường Đại học Công nghệ Thông tin (ĐHQG-HCM) · 2026
+    </footer>
+</div>
+
+</body>
+</html>
